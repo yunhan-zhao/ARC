@@ -49,15 +49,15 @@ class finetune_the_whole_system_with_depth_loss(base_model):
 
 		self.attModule = _Attention_FullRes(input_nc = 3, output_nc = 1)
 		self.inpaintNet = _ResGenerator_Upsample(input_nc = 3, output_nc = 3)
-		self.style_translator_T = _ResGenerator_Upsample(input_nc = 3, output_nc = 3)
+		self.styleTranslator = _ResGenerator_Upsample(input_nc = 3, output_nc = 3)
 		self.depthEstModel = _UNetGenerator(input_nc = 3, output_nc = 1)
 
 		self.tau_min = 0.05
-		self.model_name = ['attModule', 'inpaintNet', 'style_translator_T', 'depthEstModel']
+		self.model_name = ['attModule', 'inpaintNet', 'styleTranslator', 'depthEstModel']
 		self.L1loss = nn.L1Loss()
 
 		if self.isTrain:
-			self.optim_depth = optim.Adam(list(self.depthEstModel.parameters()) + list(self.inpaintNet.parameters()) + list(self.style_translator_T.parameters()), lr=self.task_lr, betas=(0.5, 0.999))
+			self.optim_depth = optim.Adam(list(self.depthEstModel.parameters()) + list(self.inpaintNet.parameters()) + list(self.styleTranslator.parameters()), lr=self.task_lr, betas=(0.5, 0.999))
 			self.optim_name = ['optim_depth']
 			self._get_scheduler()
 			self.loss_BCE = nn.BCEWithLogitsLoss()
@@ -69,8 +69,8 @@ class finetune_the_whole_system_with_depth_loss(base_model):
 
 			# load the "best" style translator T (from step 2)
 			preTrain_path = os.path.join(os.getcwd(), 'experiments', 'train_style_translator_T')
-			self._load_models(model_list=['style_translator_T'], mode=480, isTrain=True, model_path=preTrain_path)
-			print('Successfully loaded pre-trained {} model from {}'.format('style_translator_T', preTrain_path))
+			self._load_models(model_list=['styleTranslator'], mode=480, isTrain=True, model_path=preTrain_path)
+			print('Successfully loaded pre-trained {} model from {}'.format('styleTranslator', preTrain_path))
 
 			# load the "best" attention module A (from step 5)
 			preTrain_path = os.path.join(os.getcwd(), 'experiments', 'jointly_train_depth_predictor_D_and_attention_module_A')
@@ -164,7 +164,7 @@ class finetune_the_whole_system_with_depth_loss(base_model):
 			fn.write('--'*5+'\n')
 			fn.close()
 
-			self._set_models_train(['attModule', 'inpaintNet', 'style_translator_T', 'depthEstModel'])
+			self._set_models_train(['attModule', 'inpaintNet', 'styleTranslator', 'depthEstModel'])
 			iterCount,sampleCount = 0, 0
 
 			for sample_dict in self.dataloaders_xLabels_joint:
@@ -180,7 +180,7 @@ class finetune_the_whole_system_with_depth_loss(base_model):
 				B, C, H, W = imageListReal.size()[0], imageListReal.size()[1], imageListReal.size()[2], imageListReal.size()[3]
 
 				with torch.set_grad_enabled(phase=='train'):
-					r2s_img = self.style_translator_T(imageListReal)[-1]
+					r2s_img = self.styleTranslator(imageListReal)[-1]
 					confident_score = self.attModule(imageListReal)[-1]
 					# convert to sparse confident score
 					confident_score = self.compute_spare_attention(confident_score, t=self.tau_min, isTrain=False)
@@ -276,7 +276,7 @@ class finetune_the_whole_system_with_depth_loss(base_model):
 			'best' is used for after training mode
 		'''
 		set_name = 'test'
-		eval_model_list = ['attModule', 'inpaintNet', 'style_translator_T', 'depthEstModel']
+		eval_model_list = ['attModule', 'inpaintNet', 'styleTranslator', 'depthEstModel']
 
 		if isinstance(mode, int) and self.isTrain:
 			self._set_models_eval(eval_model_list)
@@ -312,7 +312,7 @@ class finetune_the_whole_system_with_depth_loss(base_model):
 
 			if self.isTrain and self.use_apex:
 				with amp.disable_casts():
-					r2s_img = self.style_translator_T(imageList)[-1]
+					r2s_img = self.styleTranslator(imageList)[-1]
 					confident_score = self.attModule(imageList)[-1]
 					# convert to sparse confident score
 					confident_score = self.compute_spare_attention(confident_score, t=self.tau_min, isTrain=False)
@@ -325,7 +325,7 @@ class finetune_the_whole_system_with_depth_loss(base_model):
 					predList = self.depthEstModel(reconst_img)[-1].detach().to('cpu')
 
 			else:
-				r2s_img = self.style_translator_T(imageList)[-1]
+				r2s_img = self.styleTranslator(imageList)[-1]
 				confident_score = self.attModule(imageList)[-1]
 				# convert to sparse confident score
 				confident_score = self.compute_spare_attention(confident_score, t=self.tau_min, isTrain=False)

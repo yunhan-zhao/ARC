@@ -96,7 +96,7 @@ class train_inpainting_module_I(base_model):
 
 		self.attModule = _Attention_FullRes(input_nc = 3, output_nc = 1) # logits, no tanh()
 		self.inpaintNet = _ResGenerator_Upsample(input_nc = 3, output_nc = 3)
-		self.style_translator_T = _ResGenerator_Upsample(input_nc = 3, output_nc = 3)
+		self.styleTranslator = _ResGenerator_Upsample(input_nc = 3, output_nc = 3)
 		self.netD = DiscriminatorGlobalLocal(image_size=240)
 
 		self.tau_min = 0.05
@@ -113,7 +113,7 @@ class train_inpainting_module_I(base_model):
 		self.style_loss_weight = 1.0
 		self.fake_loss_weight = 0.01
 
-		self.model_name = ['attModule', 'inpaintNet', 'style_translator_T', 'netD', 'p_vgg', 's_vgg']
+		self.model_name = ['attModule', 'inpaintNet', 'styleTranslator', 'netD', 'p_vgg', 's_vgg']
 		self.L1loss = nn.L1Loss()
 
 		if self.isTrain:
@@ -126,8 +126,8 @@ class train_inpainting_module_I(base_model):
 
 			# load the "best" style translator T (from step 2)
 			preTrain_path = os.path.join(os.getcwd(), 'experiments', 'train_style_translator_T')
-			self._load_models(model_list=['style_translator_T'], mode=480, isTrain=True, model_path=preTrain_path)
-			print('Successfully loaded pre-trained {} model from {}'.format('style_translator_T', preTrain_path))
+			self._load_models(model_list=['styleTranslator'], mode=480, isTrain=True, model_path=preTrain_path)
+			print('Successfully loaded pre-trained {} model from {}'.format('styleTranslator', preTrain_path))
 
 			# load the "best" attention module A (from step 3)
 			preTrain_path = os.path.join(os.getcwd(), 'experiments', 'train_initial_attention_module_A')
@@ -217,7 +217,7 @@ class train_inpainting_module_I(base_model):
 		best_loss = float('inf')
 
 		set_requires_grad(self.attModule, requires_grad=False) # freeze attention module
-		set_requires_grad(self.style_translator_T, requires_grad=False) # freeze sytle translator
+		set_requires_grad(self.styleTranslator, requires_grad=False) # freeze sytle translator
 
 		tensorboardX_iter_count = 0
 		for epoch in range(self.total_epoch_num):
@@ -242,7 +242,7 @@ class train_inpainting_module_I(base_model):
 				B, C, H, W = imageListReal.size()[0], imageListReal.size()[1], imageListReal.size()[2], imageListReal.size()[3]
 
 				with torch.set_grad_enabled(phase=='train'):
-					r2s_img = self.style_translator_T(imageListReal)[-1]
+					r2s_img = self.styleTranslator(imageListReal)[-1]
 					confident_score = self.attModule(imageListReal)[-1]
 					# convert to sparse confident score
 					confident_score = self.compute_spare_attention(confident_score, t=self.tau_min, isTrain=False)

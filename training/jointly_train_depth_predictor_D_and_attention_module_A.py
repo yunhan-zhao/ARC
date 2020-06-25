@@ -47,7 +47,7 @@ class jointly_train_depth_predictor_D_and_attention_module_A(base_model):
 
 		self.attModule = _Attention_FullRes(input_nc = 3, output_nc = 1)
 		self.inpaintNet = _ResGenerator_Upsample(input_nc = 3, output_nc = 3)
-		self.style_translator_T = _ResGenerator_Upsample(input_nc = 3, output_nc = 3)
+		self.styleTranslator = _ResGenerator_Upsample(input_nc = 3, output_nc = 3)
 		self.netD = Discriminator80x80InstNorm(input_nc = 3)
 		self.depthEstModel = _UNetGenerator(input_nc = 3, output_nc = 1)
 
@@ -58,7 +58,7 @@ class jointly_train_depth_predictor_D_and_attention_module_A(base_model):
 		self.fake_loss_weight = 1e-3
 
 		self.tensorboard_num_display_per_epoch = 1
-		self.model_name = ['attModule', 'inpaintNet', 'style_translator_T', 'netD', 'depthEstModel']
+		self.model_name = ['attModule', 'inpaintNet', 'styleTranslator', 'netD', 'depthEstModel']
 		self.L1loss = nn.L1Loss()
 
 		if self.isTrain:
@@ -77,8 +77,8 @@ class jointly_train_depth_predictor_D_and_attention_module_A(base_model):
 
 			# load the "best" style translator T (from step 2)
 			preTrain_path = os.path.join(os.getcwd(), 'experiments', 'train_style_translator_T')
-			self._load_models(model_list=['style_translator_T'], mode=480, isTrain=True, model_path=preTrain_path)
-			print('Successfully loaded pre-trained {} model from {}'.format('style_translator_T', preTrain_path))
+			self._load_models(model_list=['styleTranslator'], mode=480, isTrain=True, model_path=preTrain_path)
+			print('Successfully loaded pre-trained {} model from {}'.format('styleTranslator', preTrain_path))
 
 			# load the "best" attention module A (from step 3)
 			preTrain_path = os.path.join(os.getcwd(), 'experiments', 'train_initial_attention_module_A')
@@ -209,7 +209,7 @@ class jointly_train_depth_predictor_D_and_attention_module_A(base_model):
 		since = time.time()
 		best_loss = float('inf')
 
-		set_requires_grad(self.style_translator_T, requires_grad=False) # freeze style translator T
+		set_requires_grad(self.styleTranslator, requires_grad=False) # freeze style translator T
 		set_requires_grad(self.inpaintNet, requires_grad=False) # freeze inpainting module I
 
 		tensorboardX_iter_count = 0
@@ -221,7 +221,7 @@ class jointly_train_depth_predictor_D_and_attention_module_A(base_model):
 			fn.write('--'*5+'\n')
 			fn.close()
 
-			self._set_models_train(['attModule', 'inpaintNet', 'style_translator_T', 'depthEstModel'])
+			self._set_models_train(['attModule', 'inpaintNet', 'styleTranslator', 'depthEstModel'])
 			iterCount = 0
 
 			for sample_dict in self.dataloaders_xLabels_joint:
@@ -237,7 +237,7 @@ class jointly_train_depth_predictor_D_and_attention_module_A(base_model):
 				B, C, H, W = imageListReal.size()[0], imageListReal.size()[1], imageListReal.size()[2], imageListReal.size()[3]
 
 				with torch.set_grad_enabled(phase=='train'):
-					r2s_img = self.style_translator_T(imageListReal)[-1]
+					r2s_img = self.styleTranslator(imageListReal)[-1]
 					confident_score = self.attModule(imageListReal)[-1]
 					# convert to sparse confident score
 					confident_score = self.compute_spare_attention(confident_score, t=self.tau_min, isTrain=True)
@@ -353,7 +353,7 @@ class jointly_train_depth_predictor_D_and_attention_module_A(base_model):
 			'best' is used for after training mode
 		'''
 		set_name = 'test'
-		eval_model_list = ['attModule', 'inpaintNet', 'style_translator_T', 'depthEstModel']
+		eval_model_list = ['attModule', 'inpaintNet', 'styleTranslator', 'depthEstModel']
 
 		if isinstance(mode, int) and self.isTrain:
 			self._set_models_eval(eval_model_list)
@@ -389,7 +389,7 @@ class jointly_train_depth_predictor_D_and_attention_module_A(base_model):
 
 			if self.isTrain and self.use_apex:
 				with amp.disable_casts():
-					r2s_img = self.style_translator_T(imageList)[-1]
+					r2s_img = self.styleTranslator(imageList)[-1]
 					confident_score = self.attModule(imageList)[-1]
 					# convert to sparse confident score
 					confident_score = self.compute_spare_attention(confident_score, t=self.tau_min, isTrain=False)
@@ -402,7 +402,7 @@ class jointly_train_depth_predictor_D_and_attention_module_A(base_model):
 					predList = self.depthEstModel(reconst_img)[-1].detach().to('cpu') # [-1, 1]
 
 			else:
-				r2s_img = self.style_translator_T(imageList)[-1]
+				r2s_img = self.styleTranslator(imageList)[-1]
 				confident_score = self.attModule(imageList)[-1]
 				# convert to sparse confident score
 				confident_score = self.compute_spare_attention(confident_score, t=self.tau_min, isTrain=False)

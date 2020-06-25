@@ -236,7 +236,7 @@ class train_style_translator_T(base_model):
 					fn.close()
 			
 			if (epoch+1) % self.save_steps == 0:
-				self.save_models(['netG_r2s'], mode=epoch+1, save_list=['style_translator_T'])
+				self.save_models(['netG_r2s'], mode=epoch+1, save_list=['styleTranslator'])
 
 			# take step in optimizer
 			for scheduler in self.scheduler_list:

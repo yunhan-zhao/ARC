@@ -35,7 +35,8 @@ If you find our work useful in your research please consider citing our paper:
 ## Contents
 
 - [Requirments](#requirements)
-- [Training and Inference](#training-and-inference)
+- [Training Precedures](#training-precedures)
+- [Evaluations](#evaluations)
 - [Pretrained Models](#pretrained-models)
 
 
@@ -66,10 +67,10 @@ You need to download Kitti and vKitti for Kitti experiments and follow the same 
 ## Training Precedures
 - [1 Train Initial Depth Predictor D](#1-Train-Initial-Depth-Predictor-D)
 - [2 Train Style Translator T (pretrain T)](#2-Train-Style-Translator-T)
-- [3 Train Initial Attention Module A](#3-generate-predictions)
-- [4 Train Inpainting Module I (pretrain I)](#4-convert-predictions-to-pseudo-lidar-and-planes)
-- [5 Jointly Train Depth Predictor D and Attention Module A (pretrain A, D)](#5-sparsify-pseudo-lidar)
-- [6 Finetune the Whole System with Depth Loss](#6-graph-based-depth-correction)
+- [3 Train Initial Attention Module A](#3-train-initial-attention-module)
+- [4 Train Inpainting Module I (pretrain I)](#4-train-inpainting-module-I)
+- [5 Jointly Train Depth Predictor D and Attention Module A (pretrain A, D)](#5-jointly-train-depth-predictor-D-and-attention-module-A)
+- [6 Finetune the Whole System with Depth Loss](#6-finetune-the-whole-system-with-depth-loss)
 
 All training steps use one common `train.py` file so please make sure to comment/uncomment the correct line for each step. 
 ```bash
@@ -103,8 +104,9 @@ CUDA_VISIBLE_DEVICES=<GPU IDs> python train.py \
 Make sure uncomment step 6 in the `train.py` file. If you want to evaluate with your own data, please place your own data under `<real dataset>/test` with the dataset structure described above.
 
 ## Pretrained Models
-Pretrained models for the NYUv2 & PBRS experiment are available [here](https://drive.google.com/drive/folders/1gB4dE3qoHrNGQqqU7cea7Z3MouPIJA9m?usp=sharing)
-Pretrained models for the Kitti & vKitti experiment are available [here]()
+Pretrained models for the NYUv2 & PBRS experiment are available [here](https://drive.google.com/drive/folders/1gB4dE3qoHrNGQqqU7cea7Z3MouPIJA9m?usp=sharing).
+
+Pretrained models for the Kitti & vKitti experiment are available [here](https://drive.google.com/drive/folders/1XzCXm91-HgXm1OKx358yKFN-aSVZGqpM?usp=sharing).
 
 ## Acknowledgments
 This code is developed based on [T2Net](https://github.com/lyndonzheng/Synthetic2Realistic) and [Pytorch-CycleGAN](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix).
