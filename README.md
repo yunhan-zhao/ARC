@@ -87,11 +87,11 @@ Train the style translator T and yield a good initialization for style translato
 #### 3 Train Initial Attention Module A 
 Train an initial attention module A from scratch with descending $\tau$ values.
 #### 4 Train Inpainting Module I (pretrain I)
-Train the inpainting module I with A (from step 3) and I (from step 2). This leads to a good initalization to I.
+Train the inpainting module I with T (from step 2) and A (from step 3). This leads to a good initalization to I.
 #### 5 Jointly Train Depth Predictor D and Attention Module A (pretrain A, D)
 Further jointly train depth predictor D and attention module A together with D (from step 1), T (from step 2), A (from step 3) and I (from step 4). The A and D learned from this step is the good initialization before finetuning the whole system together with depth loss. In step 5 and later step 6, we train for relatively less epochs, i.e.,  `total_epoch_num = 150`. 
 #### 6 Finetune the Whole System with Depth Loss (Modular Coordinate Descent)
-This step corresponds to the modular coordinate descent shown in our paper. The experimental results on NYUv2 dataset we reported in the paper are the evaluation results from this step (one step finetuning).
+Lastly, we finetune the whole system with depth loss terms using D (from step 5), T (from step 2), A (from step 5) and I (from step 4). The experimental results on NYUv2 dataset we reported in the paper are the evaluation results from this step (one step finetuning).
 
 ## Evaluations
 Evaluate the final results
