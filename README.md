@@ -6,11 +6,14 @@ CVPR 2020
 
 For more details, please check our [project website](https://www.ics.uci.edu/~yunhaz5/cvpr2020/domain_decluttering.html)
 
-![Figure](figures/demo.pdf)
+<img src='figures/4343-teaser.gif' align="center">
 
 ### Abstract
 Leveraging synthetically rendered data offers great potential to improve monocular depth estimation and other geometric estimation tasks, but closing the synthetic-real domain gap is a non-trivial and important task. While much recent work has focused on unsupervised domain adaptation, we consider a more realistic scenario where a large amount of synthetic training data is supplemented by a small set of real images with ground-truth. In this setting, we find that existing domain translation approaches are difficult to train and offer little advantage over simple baselines that use a mix of real and synthetic data. A key failure mode is that real-world images contain novel objects and clutter not present in synthetic training. This high-level domain shift isn’t handled by existing image translation models.
+
 Based on these observations, we develop an attention module that learns to identify and remove difficult out-ofdomain regions in real images in order to improve depth prediction for a model trained primarily on synthetic data. We carry out extensive experiments to validate our attendremove-complete approach (ARC) and find that it significantly outperforms state-of-the-art domain adaptation methods for depth prediction. Visualizing the removed regions provides interpretable insights into the synthetic-real domain gap.
+
+<img src='figures/demo.png' align="center">
 
 ## Reference
 If you find our work useful in your research please consider citing our paper:
