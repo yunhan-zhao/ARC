@@ -37,12 +37,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--exp_dir', type=str, default=os.path.join(os.getcwd(), 'experiments'),
 							 	help='place to store all experiments')
 parser.add_argument('--project_name', type=str, help='Test Project')
-parser.add_argument('--path_to_PBRS', type=str, default='/home/yunhaz5/project/Syn2Real/dataset/pbrs',
-							 	help='absolute dir of pbrs dataset')
-parser.add_argument('--path_to_NYUv2', type=str, default='/home/yunhaz5/project/Syn2Real/dataset/nyu_v2',
-								 help='absolute dir of NYUV2 dataset')
+parser.add_argument('--path_to_NYUv2', type=str, default='your absolute path to NYUv2 data',
+								 help='absolute dir of NYUv2 dataset')
+parser.add_argument('--path_to_PBRS', type=str, default='your absolute path to PBRS data',
+							 	help='absolute dir of PBRS dataset')
 parser.add_argument('--isTrain', action='store_true', help='whether this is training phase')
-parser.add_argument('--originalDepth', action='store_true', help='whether to use original depth instead of inpainted in training')
 parser.add_argument('--batch_size', type=int, default=16, help='batch size')
 parser.add_argument('--eval_batch_size', type=int, default=1, help='batch size')
 parser.add_argument('--cropSize', type=list, default=[240, 320] , help='size of samples in experiments')
